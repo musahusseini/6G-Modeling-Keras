@@ -41,3 +41,13 @@ The core of this project involves developing and evaluating regression models us
 Specific details regarding the datasets used, feature engineering, and the exact Keras model architectures will be detailed within the Jupyter notebooks or script files.
 
 ## Installation
+
+## Usage
+
+## Results and Discussion
+
+## License
+This code is released under TensorFlow (which Keras runs on, especially in Colab) is Apache License 2.0., as found in the LICENSE file.
+This code is released under Apache 2.0, as found in the [LICENSE](https://github.com/keras-team/keras/blob/master/LICENSE)) file
+
+## Contact
