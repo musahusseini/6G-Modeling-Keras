@@ -43,6 +43,7 @@ Specific details regarding the datasets used, feature engineering, and the exact
 ## Installation
 
 ## Usage
+To run the experiments and explore the models in this repository, clone the project, create and activate a virtual environment, then install the required packages using pip install -r requirements.txt. Once set up, navigate to the project directory and launch jupyter notebook to execute the .ipynb files, or run specific Python scripts directly (e.g., python src/train_model.py).
 
 ## Results and Discussion
 
