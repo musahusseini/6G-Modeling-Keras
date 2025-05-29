@@ -51,3 +51,4 @@ This code is released under TensorFlow (which Keras runs on, especially in Colab
 This code is released under Apache 2.0, as found in the [LICENSE](https://github.com/keras-team/keras/blob/master/LICENSE)) file
 
 ## Contact
+For any questions regarding this repository, you can reach out to the author at musahusseini@outlook.com
