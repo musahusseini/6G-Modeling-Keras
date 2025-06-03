@@ -1,0 +1,95 @@
+import tensorflow as tf
+import keras_tuner as kt
+import matplotlib.pyplot as plt
+
+# Set random seed for reproducibility
+tf.random.set_seed(42)
+
+# Define parameters
+num_samples = 1000
+num_channels = 2
+input_shape = (num_channels,)
+
+# Generate synthetic RF signal data
+inputs = tf.random.normal((num_samples, num_channels))
+outputs = tf.random.normal((num_samples, 1))  # Target output
+
+# Normalize data
+inputs = (inputs - tf.reduce_mean(inputs)) / tf.math.reduce_std(inputs)
+outputs = (outputs - tf.reduce_mean(outputs)) / tf.math.reduce_std(outputs)
+
+# Define R-squared metric
+def r2_score(y_true, y_pred):
+    SS_res = tf.reduce_sum(tf.square(y_true - y_pred))
+    SS_tot = tf.reduce_sum(tf.square(y_true - tf.reduce_mean(y_true)))
+    return 1 - SS_res / (SS_tot + tf.keras.backend.epsilon())
+
+# Model-building function for hyperparameter tuning
+def model_builder(hp):
+    model = tf.keras.Sequential()
+    
+    # Tunable layer sizes
+    model.add(tf.keras.layers.Dense(hp.Int('units_1', min_value=32, max_value=128, step=32),
+                                    activation="relu", input_shape=input_shape))
+    model.add(tf.keras.layers.BatchNormalization())  # Improve stability
+    model.add(tf.keras.layers.Dropout(0.2))  # Prevent overfitting
+
+    model.add(tf.keras.layers.Dense(hp.Int('units_2', min_value=32, max_value=128, step=32),
+                                    activation="relu"))
+    model.add(tf.keras.layers.BatchNormalization())
+    model.add(tf.keras.layers.Dropout(0.2))
+
+    model.add(tf.keras.layers.Dense(1))  # Output layer
+    
+    # Compile with additional metrics
+    model.compile(optimizer="adam", loss="mse", metrics=["mae", r2_score])
+    
+    return model
+
+# Hyperparameter tuning
+tuner = kt.RandomSearch(model_builder,
+                        objective='val_loss',
+                        max_trials=5,  # Number of configurations to test
+                        executions_per_trial=1)  # Runs per configuration
+
+# Perform search to find optimal hyperparameters
+tuner.search(inputs, outputs, epochs=10, validation_split=0.2)
+
+# Retrieve best model
+best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
+final_model = model_builder(best_hps)
+
+# Define model checkpoint
+checkpoint_path = "model_checkpoint.weights.h5"
+checkpoint_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
+save_weights_only=True,
+monitor='val_loss',
+save_best_only=True)
+
+# Early stopping
+early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+
+# Learning rate reduction on plateau
+lr_schedule = tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5, min_lr=1e-5)
+
+# Train final model with enhanced callbacks
+history = final_model.fit(inputs, outputs, epochs=50, validation_split=0.2,
+callbacks=[checkpoint_callback, early_stopping, lr_schedule])
+
+# Generate predictions
+predictions = final_model.predict(inputs)
+
+# Plot Results
+plt.figure(figsize=(10, 6))
+plt.scatter(range(num_samples), outputs, label="True Outputs", alpha=0.7, s=10, color='blue')
+plt.scatter(range(num_samples), predictions, label="Predictions", alpha=0.7, s=10, color='orange')
+plt.title("Model Predictions vs True Outputs")
+plt.xlabel("Sample Index")
+plt.ylabel("Value")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Print best hyperparameters
+print(f"Optimal Layer 1 Units: {best_hps.get('units_1')}")
+print(f"Optimal Layer 2 Units: {best_hps.get('units_2')}")
