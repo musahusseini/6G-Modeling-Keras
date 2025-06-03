@@ -1,0 +1,65 @@
+# Define the parameters for the RF communication model
+num_samples = 1000
+num_channels = 2
+input_shape = (num_channels,)  # Keras expects shape excluding the batch size
+output_shape = (num_samples,)
+
+# Create the input and output tensors for training data
+inputs = tf.random.normal((num_samples, num_channels))
+outputs = tf.random.normal((num_samples, 1))  # Match the final output shape
+
+# Define the RF communication model using Keras layers
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(64, activation="relu", input_shape=input_shape),
+    tf.keras.layers.Dense(64, activation="relu"),
+    tf.keras.layers.Dense(1)
+])
+
+# Compile the model with an optimizer and loss function
+model.compile(optimizer="adam", loss="mse")
+
+# Train the model on the training data
+model.fit(inputs, outputs, epochs=10)
+
+# Generate predictions using the trained model
+predictions = model.predict(inputs)
+
+import tensorflow as tf
+import matplotlib.pyplot as plt
+
+# Define the parameters for the RF communication model
+num_samples = 1000
+num_channels = 2
+input_shape = (num_channels,)  # Keras expects shape excluding the batch size
+output_shape = (num_samples,)
+
+# Create the input and output tensors for training data
+inputs = tf.random.normal((num_samples, num_channels))
+outputs = tf.random.normal((num_samples, 1))  # Match the final output shape
+
+# Define the RF communication model using Keras layers
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(64, activation="relu", input_shape=input_shape),
+    tf.keras.layers.Dense(64, activation="relu"),
+    tf.keras.layers.Dense(1)
+])
+
+# Compile the model with an optimizer and loss function
+model.compile(optimizer="adam", loss="mse")
+
+# Train the model on the training data
+model.fit(inputs, outputs, epochs=10, verbose=0)
+
+# Generate predictions using the trained model
+predictions = model.predict(inputs)
+
+# Plot the true outputs versus the predictions
+plt.figure(figsize=(10, 6))
+plt.scatter(range(num_samples), outputs, label="True Outputs", alpha=0.7, s=10)
+plt.scatter(range(num_samples), predictions, label="Predictions", alpha=0.7, s=10)
+plt.title("Model Predictions vs True Outputs")
+plt.xlabel("Sample Index")
+plt.ylabel("Value")
+plt.legend()
+plt.grid(True)
+plt.show()
